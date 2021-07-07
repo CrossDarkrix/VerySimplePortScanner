@@ -13,7 +13,7 @@ def Logo():
  |_| \___/_|  \__|___/\__\__,_|_||_|
 
  Simple Port Scanner.
- Code Maked By DarkRix.
+  Author: DarkRix.
  """ + Fore.RESET)
 
 def scan_port(iPAdress, PortNum):
