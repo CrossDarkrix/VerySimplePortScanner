@@ -3,7 +3,7 @@
 
 from colorama import init as InitingColor, Fore
 import socket, sys
-from threading import Thread as THd
+
 InitingColor()
 
 def Logo():
@@ -12,13 +12,13 @@ def Logo():
  |  _/ _ \ '_|  _\__ \/ _/ _` | ' \ 
  |_| \___/_|  \__|___/\__\__,_|_||_|
 
- Simple Port Scanner.
+ Simple TCP Port Scanner.
  Author: DarkRix.
  """ + Fore.RESET)
 
 def scan_port(iPAdress, PortNum):
+    global Scan_Result
     try:
-        global Scan_Result
         skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         skt.settimeout(0.02)
         Scan_Result = skt.connect_ex((iPAdress, PortNum))
@@ -45,7 +45,7 @@ def main():
     print(Fore.RED + '\nSelected Host: {HOST}\n'.format(HOST=IPAdress) + Fore.RESET)
 
     try:
-        FastPort = int(input(Fore.RED + 'Fast Port Numbar(Mini: 1): ' + Fore.RESET))
+        FastPort = int(input(Fore.RED + 'Fast Port Numbar(Mini: 0): ' + Fore.RESET))
     except:
         print('Error: InputPort Numbar')
         sys.exit(0)
@@ -58,17 +58,16 @@ def main():
     print(Fore.YELLOW + '\n\nScanning Port...\n' + Fore.RESET)
 
     for Port in range(FastPort, LastPort):
-        THd(target=scan_port(IPAdress, Port)).start()
+        scan_port(IPAdress, Port)
         if Scan_Result == 0:
             try:
                 print(Fore.GREEN + '+ Open Port: {OPort}({ServiceName})'.format(OPort=Port, ServiceName=socket.getservbyport(Port)) + Fore.RESET)
             except:
                 print(Fore.GREEN + '+ Open Port: {OPort}({ServiceName})'.format(OPort=Port, ServiceName='unknow service') + Fore.RESET)
         else:
-            print(Fore.RED + '- Close Port: {CPort}'.format(CPort=Port) + Fore.RESET, end='\r', flush=True)
+            print(Fore.RED + '- Scan Port: {CPort}'.format(CPort=Port+1) + Fore.RESET, end='\r', flush=True)
 
-    print()
-    print(Fore.YELLOW + '\nScanning Done.' + Fore.RESET)
+    print(Fore.YELLOW + '\n\nScanning Done.' + Fore.RESET)
 
 if __name__== '__main__':
     main()
