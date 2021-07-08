@@ -19,8 +19,8 @@ def Logo():
  """ + Fore.RESET)
 
 def scan_port(iPAdress, PortNum):
-    global OpenPort
-    global ClosedPort
+    OpenPort = None
+    ClosedPort = None
     try:
         skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         skt.settimeout(0.02)
@@ -36,7 +36,7 @@ def scan_port(iPAdress, PortNum):
         pass
     if Scan_Result == 0:
         try:
-            OpenPort = '+ Open Port: {OPort}({ServiceName})'.format(OPort=PortNum, ServiceName=socket.getservbyport(Port))
+            OpenPort = '+ Open Port: {OPort}({ServiceName})'.format(OPort=PortNum, ServiceName=socket.getservbyport(PortNum))
         except:
             OpenPort = '+ Open Port: {OPort}({ServiceName})'.format(OPort=PortNum, ServiceName='unknow service')
     else:
