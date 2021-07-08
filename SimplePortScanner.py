@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from colorama import init as InitingColor, Fore
-import socket, sys
+import socket, sys, concurrent.futures
+from os import cpu_count
 
 InitingColor()
+MaxWorker = int(cpu_count() * 15)
 
 def Logo():
     print(Fore.RED + """___         _   ___               
@@ -17,7 +19,8 @@ def Logo():
  """ + Fore.RESET)
 
 def scan_port(iPAdress, PortNum):
-    global Scan_Result
+    global OpenPort
+    global ClosedPort
     try:
         skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         skt.settimeout(0.02)
@@ -31,6 +34,15 @@ def scan_port(iPAdress, PortNum):
         sys.exit(0)
     except:
         pass
+    if Scan_Result == 0:
+        try:
+            OpenPort = '+ Open Port: {OPort}({ServiceName})'.format(OPort=PortNum, ServiceName=socket.getservbyport(Port))
+        except:
+            OpenPort = '+ Open Port: {OPort}({ServiceName})'.format(OPort=PortNum, ServiceName='unknow service')
+    else:
+        ClosedPort = '- Scan Port: {CPort}'.format(CPort=PortNum+1)
+    return OpenPort, ClosedPort
+
 
 def main():
     Logo()
@@ -56,16 +68,13 @@ def main():
         sys.exit(0)
 
     print(Fore.YELLOW + '\n\nScanning Port...\n' + Fore.RESET)
-
+    
     for Port in range(FastPort, LastPort):
-        scan_port(IPAdress, Port)
-        if Scan_Result == 0:
-            try:
-                print(Fore.GREEN + '+ Open Port: {OPort}({ServiceName})'.format(OPort=Port, ServiceName=socket.getservbyport(Port)) + Fore.RESET)
-            except:
-                print(Fore.GREEN + '+ Open Port: {OPort}({ServiceName})'.format(OPort=Port, ServiceName='unknow service') + Fore.RESET)
-        else:
-            print(Fore.RED + '- Scan Port: {CPort}'.format(CPort=Port+1) + Fore.RESET, end='\r', flush=True)
+        Scan_Results = concurrent.futures.Future.result(concurrent.futures.ThreadPoolExecutor(max_workers=MaxWorker).submit(scan_port, IPAdress, Port))
+        try:
+            print(Fore.GREEN + Scan_Results[0] + Fore.RESET)
+        except:
+            print(Fore.RED + Scan_Results[1] + Fore.RESET, end='\r', flush=True)
 
     print(Fore.YELLOW + '\n\nScanning Done.' + Fore.RESET)
 
