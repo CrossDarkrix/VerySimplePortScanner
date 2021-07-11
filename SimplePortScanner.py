@@ -2,11 +2,20 @@
 # -*- coding: utf-8 -*-
 
 from colorama import init as InitingColor, Fore
-import socket, sys, concurrent.futures
-from os import cpu_count
+import socket, sys
+from threading import Thread
 
 InitingColor()
-MaxWorker = int(cpu_count() * 15)
+
+class ScanThread(Thread):
+    def __init__(self, iP, FaPort, LaPort):
+        Thread.__init__(self)
+        self.iP = iP
+        self.FaPort = FaPort
+        self.LaPort = LaPort
+
+    def run(self):
+        scan_port(self.iP, self.FaPort, self.LaPort)
 
 def Logo():
     print(Fore.RED + """___         _   ___               
@@ -18,44 +27,39 @@ def Logo():
  Author: DarkRix.
  """ + Fore.RESET)
 
-def scan_port(iPAdress, PortNum):
-    OpenPort = None
-    ClosedPort = None
-    try:
-        skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        skt.settimeout(0.02)
-        Scan_Result = skt.connect_ex((iPAdress, PortNum))
-        skt.close()
-    except socket.error:
-        pass
-    except OverflowError:
-        pass
-    except KeyboardInterrupt:
-        sys.exit(0)
-    except:
-        pass
-    if Scan_Result == 0:
+def scan_port(iPAdress, FPort, LPort):
+    global Scan_Result
+    for PortNum in range(FPort, LPort):
         try:
-            OpenPort = '+ Open Port: {OPort}({ServiceName})'.format(OPort=PortNum, ServiceName=socket.getservbyport(PortNum))
+            skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            skt.settimeout(0.02)
+            Scan_Result = skt.connect_ex((iPAdress, PortNum))
+            skt.close()
+            if Scan_Result == 0:
+                try:
+                    print(Fore.GREEN + '+ Open Port: {OPort}({ServiceName})'.format(OPort=PortNum, ServiceName=socket.getservbyport(PortNum)) + Fore.RESET)
+                except:
+                    print(Fore.GREEN + '+ Open Port: {OPort}({ServiceName})'.format(OPort=PortNum, ServiceName='unknow service') + Fore.RESET)
+            else:
+                 print(Fore.RED + '- Scan Port: {CPort}'.format(CPort=PortNum+1) + Fore.RESET, end='\r', flush=True)
+        except socket.error:
+            pass
+        except OverflowError:
+            pass
+        except KeyboardInterrupt:
+            sys.exit(0)
         except:
-            OpenPort = '+ Open Port: {OPort}({ServiceName})'.format(OPort=PortNum, ServiceName='unknow service')
-    else:
-        ClosedPort = '- Scan Port: {CPort}'.format(CPort=PortNum+1)
-    return OpenPort, ClosedPort
-
+            pass
 
 def main():
     Logo()
     host = input(Fore.RED + 'Target Host: ' + Fore.RESET)
-
     try:
         IPAdress = socket.gethostbyname(host)
     except:
         print('Error: Host IP not get....')
         sys.exit(0)
-
     print(Fore.RED + '\nSelected Host: {HOST}\n'.format(HOST=IPAdress) + Fore.RESET)
-
     try:
         FastPort = int(input(Fore.RED + 'Fast Port Numbar(Mini: 0): ' + Fore.RESET))
     except:
@@ -66,16 +70,15 @@ def main():
     except:
         print('Error: InputPort Numbar')
         sys.exit(0)
-
     print(Fore.YELLOW + '\n\nScanning Port...\n' + Fore.RESET)
-    
-    for Port in range(FastPort, LastPort):
-        Scan_Results = concurrent.futures.Future.result(concurrent.futures.ThreadPoolExecutor(max_workers=MaxWorker).submit(scan_port, IPAdress, Port))
-        try:
-            print(Fore.GREEN + Scan_Results[0] + Fore.RESET)
-        except:
-            print(Fore.RED + Scan_Results[1] + Fore.RESET, end='\r', flush=True)
-
+    try:
+        StartScan = ScanThread(IPAdress, FastPort, LastPort)
+        StartScan.start()
+    except KeyboardInterrupt:
+        sys.exit(0)
+    except:
+        sys.exit(0)
+    StartScan.join()
     print(Fore.YELLOW + '\n\nScanning Done.' + Fore.RESET)
 
 if __name__== '__main__':
