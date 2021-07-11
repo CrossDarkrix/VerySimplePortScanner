@@ -12,7 +12,7 @@ def Logo():
  |  _/ _ \ '_|  _\__ \/ _/ _` | ' \ 
  |_| \___/_|  \__|___/\__\__,_|_||_|
 
- Simple Multithread TCP Port Scanner.
+ Simple MultiThread TCP Port Scanner.
  Author: DarkRix.
  """ + Fore.RESET)
 
@@ -29,7 +29,9 @@ def scan_port(iPAdress, PortNum):
             except:
                 print(Fore.GREEN + '+ Open Port: {OPort}({ServiceName})'.format(OPort=PortNum, ServiceName='unknow service') + Fore.RESET)
         else:
-            print(Fore.RED + '- Scan Port: {CPort}'.format(CPort=PortNum) + Fore.RESET, end='\r', flush=True)
+            sys.stdout.write(Fore.RED + '- Scan Port: {CPort}\r'.format(CPort=PortNum) + Fore.RESET)
+            sys.stdout.flush()
+            
     except socket.error:
         pass
     except OverflowError:
