@@ -29,7 +29,7 @@ def scan_port(iPAdress, PortNum):
             except:
                 print(Fore.GREEN + '+ Open Port: {OPort}({ServiceName})'.format(OPort=PortNum, ServiceName='unknow service') + Fore.RESET)
         else:
-            sys.stdout.write(Fore.RED + '- Scan Port: {CPort}\r'.format(CPort=PortNum) + Fore.RESET)
+            sys.stdout.write(Fore.RED + '- Scan Port: {CPort}\r'.format(CPort=PortNum+1) + Fore.RESET)
             sys.stdout.flush()
             
     except socket.error:
